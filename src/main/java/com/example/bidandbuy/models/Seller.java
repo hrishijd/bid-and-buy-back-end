@@ -18,5 +18,5 @@ public class Seller {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long sellerId;
 	@OneToMany
-	private List<Product> productsSold;
+	private List<Product> productsUploaded;
 }

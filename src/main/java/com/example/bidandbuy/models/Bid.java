@@ -17,8 +17,5 @@ public class Bid {
 	private long bidId;
 	private long amount;
 	private boolean paymentStatus;
-	private boolean BidStatus;
-	@OneToOne
-	private PaymentInfo payment;
 	private boolean sold;
 }

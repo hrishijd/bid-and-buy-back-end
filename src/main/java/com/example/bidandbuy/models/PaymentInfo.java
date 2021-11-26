@@ -17,8 +17,4 @@ public class PaymentInfo {
 	private long paymentId;
 	private long amount;
 	private boolean status;
-	@ManyToOne
-	private Collector collector;
-	@ManyToOne
-	private Seller seller;
 }

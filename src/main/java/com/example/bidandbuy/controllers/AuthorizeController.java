@@ -1,15 +1,13 @@
 package com.example.bidandbuy.controllers;
 
+import com.example.bidandbuy.service.GenerateFields;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.bidandbuy.configurations.JwtUtil;
 import com.example.bidandbuy.configurations.MyUserDetailsService;
@@ -20,7 +18,8 @@ import com.example.bidandbuy.pojo.JwtToken;
 import com.example.bidandbuy.repositories.UsersRepository;
 
 @RestController
-public class RequestController{
+@CrossOrigin
+public class AuthorizeController {
 	@Autowired
 	private AuthenticationManager authenticationManager;
 	@Autowired
@@ -29,28 +28,24 @@ public class RequestController{
 	private MyUserDetailsService uds;
 	@Autowired
 	private UsersRepository usersRepo;
+	@Autowired
+	private GenerateFields generateFields;
 	@RequestMapping(method = RequestMethod.POST, value = "/login")
 	public ResponseEntity<Object> getToken(@RequestBody AuthenticationRequest ar)
 	{
-		try {
-			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(ar.getUsername(),ar.getPassword()));
-		} catch (BadCredentialsException e) {
-			return ResponseEntity.ok(new BadCredentialsException("wrong username or password").getClass());
+		try{
+			return generateFields.getToken(ar);
+		} catch (Exception e) {
+			return ResponseEntity.ok(e.getClass());
 		}
-		final UserDetails ud=uds.loadUserByUsername(ar.getUsername());
-		final String jwt= jwtUtil.generateToken(ud);
-		final Users user=usersRepo.findByUsername(ar.getUsername());
-		return ResponseEntity.ok(new AuthenticationResponse(user,new JwtToken(jwt)));
 	}
 	@RequestMapping(method = RequestMethod.POST, value = "/signup")
 	public ResponseEntity<Object> createUser(@RequestBody Users user)
 	{
 		try {
-			usersRepo.save(user);
-			return getToken(new AuthenticationRequest(user.getUsername(),user.getPassword()));
+			return generateFields.instantiateUsers(user);
 		} catch (Exception e) {
 			return ResponseEntity.ok(e.getClass());
 		}
-		
 	}
 }
