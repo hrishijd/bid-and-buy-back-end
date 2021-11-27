@@ -3,11 +3,14 @@ package com.example.bidandbuy.controllers;
 import com.example.bidandbuy.models.Bid;
 import com.example.bidandbuy.repositories.BidRepository;
 import com.example.bidandbuy.repositories.CollectorRepository;
+import com.example.bidandbuy.repositories.UsersRepository;
 import com.example.bidandbuy.service.GenerateFields;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.NoSuchElementException;
 
 @RestController
@@ -19,11 +22,19 @@ public class BidController {
     private GenerateFields generateFields;
     @Autowired
     private BidRepository bidRepository;
-    @RequestMapping(method = RequestMethod.GET,value = "/bid/list/{collectorid}")
-    public ResponseEntity<Object> getAllBidsByCollectorId(@PathVariable("collectorid") long collectorId)
+    @Autowired
+    private UsersRepository usersRepository;
+    @RequestMapping(method = RequestMethod.GET,value = "/bid/list")
+    public ResponseEntity<Object> getAllBidsByCollectorId(Principal principal)
     {
         try{
-            return ResponseEntity.ok(collectorRepository.findById(collectorId).orElse(null).getBids());
+            String username;
+            if (principal instanceof UserDetails) {
+                username = ((UserDetails)principal). getUsername();
+            } else {
+                username = principal.getName();
+            }
+            return ResponseEntity.ok(collectorRepository.findById(usersRepository.findByUsername(username).getCollector().getCollectorId()).orElse(null).getBids());
         } catch (Exception e) {
             return ResponseEntity.ok(e.getClass());
         }
@@ -37,11 +48,17 @@ public class BidController {
             return ResponseEntity.ok(e.getClass());
         }
     }
-    @RequestMapping(method = RequestMethod.POST,value = "/bid/new/{collectorid}")
-    public ResponseEntity<Object> saveBid(@RequestBody Bid bid, @PathVariable("collectorid") long collectorId,@RequestParam("productid") long productId)
+    @RequestMapping(method = RequestMethod.POST,value = "/bid/new/{productid}")
+    public ResponseEntity<Object> saveBid(Principal principal, @RequestBody Bid bid, @PathVariable("productid") long productId)
     {
         try{
-            return ResponseEntity.ok(generateFields.saveBid(bid,collectorId,productId));
+            String username;
+            if (principal instanceof UserDetails) {
+                username = ((UserDetails)principal). getUsername();
+            } else {
+                username = principal.getName();
+            }
+            return ResponseEntity.ok(generateFields.saveBid(bid,usersRepository.findByUsername(username).getCollector().getCollectorId(),productId));
         } catch (Exception e) {
             return ResponseEntity.ok(e.getClass());
         }
