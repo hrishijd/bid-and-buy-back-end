@@ -1,6 +1,7 @@
 package com.example.bidandbuy.controllers;
 
 import com.example.bidandbuy.models.Bid;
+import com.example.bidandbuy.models.Users;
 import com.example.bidandbuy.repositories.BidRepository;
 import com.example.bidandbuy.repositories.CollectorRepository;
 import com.example.bidandbuy.repositories.UsersRepository;
@@ -11,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @RestController
@@ -59,6 +61,22 @@ public class BidController {
                 username = principal.getName();
             }
             return ResponseEntity.ok(generateFields.saveBid(bid,usersRepository.findByUsername(username).getCollector().getCollectorId(),productId));
+        } catch (Exception e) {
+            return ResponseEntity.ok(e.getClass());
+        }
+    }
+    @RequestMapping(method = RequestMethod.GET,value = "/bid/user/{bidid}")
+    public ResponseEntity<Object> getUserByBid(Principal principal,@PathVariable("bidid") long bidId)
+    {
+        try{
+            Bid bid=bidRepository.findById(bidId).orElseThrow(()->new NoSuchElementException());
+            List<Users> users=usersRepository.findAll();
+            for(Users user:users)
+            {
+                if(user.getCollector().getBids().contains(bid))
+                    return ResponseEntity.ok(user);
+            }
+            return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.ok(e.getClass());
         }
