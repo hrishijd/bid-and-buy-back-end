@@ -95,6 +95,7 @@ public class ProductController {
             return ResponseEntity.ok(e.getClass());
         }
     }
+    @CrossOrigin
     @RequestMapping(method = RequestMethod.POST,value = "/mark-sold")
     public ResponseEntity<Object> MarkSold(Principal principal,@RequestBody Bid bid)
     {
